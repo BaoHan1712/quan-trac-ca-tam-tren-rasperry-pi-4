@@ -120,65 +120,59 @@ def process_data(data_queue):
         # Lấy gói dữ liệu từ hàng đợi
         data = data_queue.get()
         if data:
-            
-
+        
             fromID, toID, title, data_receive = data
 
             print("😁😁😁😁😁😁😁😁😁😁😁😁 sensor data: ", data)
 
             # Xử lý theo toID
-            if fromID == 0:
+            id = toID
+            if id == 0:
                 sio.emit('device-status-connect', {
                     "device": "0",
                     "isConnected": True,
                     "type": "S"
                 })
-                # Gọi hàm xử lý dữ liệu cảm biến 1
                 get_data_com(value1, arr_avg1, data)
                 print("Data gửi từ cảm biến 1: ", value1.get(), arr_avg1)
-
-            elif fromID == 1:
+            elif id == 1:
                 sio.emit('device-status-connect', {
                     "device": "1",
                     "isConnected": True,
                     "type": "S"
                 })
-                # Gọi hàm xử lý dữ liệu cảm biến 2
                 get_data_com(value2, arr_avg2, data)
                 print("Data gửi từ cảm biến 2: ", value2.get(), arr_avg2)
                 event.set()
-
-            elif fromID == 7:
+            elif id == 7:
                 print("Check tín hiệu chuông báo!!!")
-                # Gọi hàm xử lý dữ liệu nút bấm
-                # get_data_button(data)  # Nếu cần
-
-            elif fromID in [2, 4, 3, 5, 9]:
+                get_data_button(data)
+            elif id in [2, 4, 3, 5, 9]:
                 print('Dữ liệu chuông báo 👌👌👌👌👌')
                 sio.emit('device-status-connect', {
-                    "device": int(fromID),
+                    "device": int(id),
                     "isConnected": True,
                     "type": "B"
                 })
                 data_send = title
                 sio.emit('device-status-running', {
-                    "device": int(fromID),
+                    "device": int(id),
                     "status": data_send,
                     "type": "B"
                 })
         else:
-            # Nếu không có dữ liệu, gửi trạng thái không kết nối
-            sio.emit('device-status-connect', {
-                "device": "0",
-                "isConnected": False,
-                "type": "S"
-            })
-            sio.emit('device-status-connect', {
-                "device": "1",
-                "isConnected": False,
-                "type": "S"
-            })
-        
+            sio.emit('device-status-connect',
+                     {
+                         "device": "0",
+                         "isConnected": False,
+                         "type": "S"
+                     })
+            sio.emit('device-status-connect',
+                     {
+                         "device": "1",
+                         "isConnected": False,
+                         "type": "S"
+                     })
         data_queue.task_done()
 
 
