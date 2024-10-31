@@ -5,75 +5,72 @@ from send_UART import *
 
 # Xong
 def get_setting_data():
-    send_threshold_value_1  = send_packet(6, 0,0x54)
-    send_threshold_value_2 = send_packet(6, 1,0x54)
+    send_packet(6, 0,0x54)
+    send_packet(6, 1,0x54)
 
-
+# Hàm quan trọng nhận dữ liệu rôi xử lý
 def get_data_com(value, arr_avg, sensor):
+ 
+    fromID, toID, title, data_receive = sensor
     
-    # Xử lý dữ liệu nhận được
-    # Check dữ liệu từ cảm biến
-    # print("❤️❤️❤️❤️❤️❤️❤️❤️", sensor)
-    status = int
-    data = int
-    id = int
-    if (len(sensor) > 4):
-        status = sensor[3]
-        data = sensor[4]
-        id = sensor[1]
-    else:
-        status = sensor[2]
-        data = sensor[3]
-        id = sensor[1]
 
-    if (data):
-        if (status == 253):
-            if (id == 0):
-                save_data_excel_ngay(None, None, data, None)
-            elif (id == 1):
-                save_data_excel_ngay(None, None, None, data)
-        elif (status == 254):
-            value.set(data)
-            arr_avg.append(data)
-        elif (status == 192):
-            if (id == 0):
-                threshold_value_1.set(data)
-            elif (id == 1):
-                threshold_value_2.set(data)
-        elif (status == 191):
-            if (id == 0):
+    if sensor:
+        if len(data_receive) >= 2:
+            data_value1, data_value2 = data_receive 
+    # Chủ động gửi giá trị bất thương
+        if title == 0x57:
+            if fromID == 0:
+                print("test 1")
+                # save_data_excel_ngay(None, None, data_receive, None)
+            elif fromID == 1:
+                print("test 2")
+                # save_data_excel_ngay(None, None, None, data_receive)
+
+        elif title == 0x54:
+            value.set(data_value1)  
+            arr_avg.append(data_value1)  
+
+        elif title == 0x57:
+            if fromID == 0:
+                threshold_value_1.set(data_value1)  
+            elif fromID == 1:
+                threshold_value_2.set(data_value1) 
+
+        elif title == 0x57:
+            if fromID == 0:
                 sio.emit('threshold-device', {
-                    "device": int(id),
-                    "threshold": data,
+                    "device": fromID,
+                    "threshold": data_value1, 
                     "type": "S"
                 })
-            elif (id == 1):
+            elif fromID == 1:
                 sio.emit('threshold-device', {
-                    "device": int(id),
+                    "device": fromID,
                     "status": 1,
                     "type": "S"
                 })
-        elif (status == 201):
-            if (id == 0):
+
+        elif title == 0x53:
+            if fromID == 0:
                 sio.emit('time-clean', {
-                    "device": int(id),
-                    "timeClean": data,
+                    "device": fromID,
+                    "timeClean": data_value1,  
                     "type": "S"
                 })
-            elif (id == 1):
+            elif fromID == 1:
                 sio.emit('time-clean', {
-                    "device": int(id),
-                    "timeClean": data,
+                    "device": fromID,
+                    "timeClean": data_value1,  
                     "type": "S"
                 })
-        elif (data == 204):
+                
+        elif title == 0x53:
             print("Đã vào đây 😘😘😘😘😘😘😘😘😘😘😘")
             sio.emit('device-status-running', {
-                "device": int(id),
+                "device": fromID,
                 "status": 1,
                 "type": "S"
             })
-
 
 
 

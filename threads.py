@@ -33,7 +33,7 @@ def read_from_port(port, data_queue, restart_app):
             data = receive_packet_all()
             if data:
                 data_queue.put(data)
-                print(data)
+
         except serial.SerialException as e:
             print(f"Error: {e}")
             root.after(4000, restart_app)
@@ -96,6 +96,7 @@ def socketio_thread():
             print("SocketIO not connected, retrying...")
             time.sleep(2)  
 
+# Xong
 # Hàm sẽ đọc dữ liệu từ excel trước, nếu đọc không được thì tryền data xuống và lưu vào excel
 def first_run():
     
@@ -123,10 +124,10 @@ def process_data(data_queue):
 
             fromID, toID, title, data_receive = data
 
-            print("😁😁😁😁😁😁😁😁😁😁😁😁 sensor data: ", data_receive)
+            print("😁😁😁😁😁😁😁😁😁😁😁😁 sensor data: ", data)
 
             # Xử lý theo toID
-            if toID == 0:
+            if fromID == 0:
                 sio.emit('device-status-connect', {
                     "device": "0",
                     "isConnected": True,
@@ -134,34 +135,34 @@ def process_data(data_queue):
                 })
                 # Gọi hàm xử lý dữ liệu cảm biến 1
                 get_data_com(value1, arr_avg1, data)
-                # print("Data gửi từ cảm biến 1: ", value1.get(), arr_avg1)
+                print("Data gửi từ cảm biến 1: ", value1.get(), arr_avg1)
 
-            elif toID == 1:
+            elif fromID == 1:
                 sio.emit('device-status-connect', {
                     "device": "1",
                     "isConnected": True,
                     "type": "S"
                 })
                 # Gọi hàm xử lý dữ liệu cảm biến 2
-                # get_data_com(value2, arr_avg2, data)
-                # print("Data gửi từ cảm biến 2: ", value2.get(), arr_avg2)
+                get_data_com(value2, arr_avg2, data)
+                print("Data gửi từ cảm biến 2: ", value2.get(), arr_avg2)
                 event.set()
 
-            elif toID == 7:
+            elif fromID == 7:
                 print("Check tín hiệu chuông báo!!!")
                 # Gọi hàm xử lý dữ liệu nút bấm
                 # get_data_button(data)  # Nếu cần
 
-            elif toID in [2, 4, 3, 5, 9]:
+            elif fromID in [2, 4, 3, 5, 9]:
                 print('Dữ liệu chuông báo 👌👌👌👌👌')
                 sio.emit('device-status-connect', {
-                    "device": int(toID),
+                    "device": int(fromID),
                     "isConnected": True,
                     "type": "B"
                 })
                 data_send = title
                 sio.emit('device-status-running', {
-                    "device": int(toID),
+                    "device": int(fromID),
                     "status": data_send,
                     "type": "B"
                 })
@@ -202,11 +203,11 @@ def handle_data_mutate():
 
 # Hàm liên tục thu thập dữ liệu,tính TB khi đủ số lượng, và lưu kết quả vào Excel.
 def start_thread():
-    if count.get() < 2:
-    # Khi độ dài của cả hai hơn 10 thì xử lý
+    if count.get() < 10:
+        if len(arr_avg1) > 10 and len(arr_avg2) > 10:
 
-        if len(arr_avg1) > 2 and len(arr_avg2) > 2:
-            print("Da vao day 🤣🤣🤣🤣🤣🤣🤣🤣🤣🤣🤣🤣")
+            print("Da vao day 🤣🤣🤣🤣🤣🤣🤣🤣🤣🤣🤣🤣🤣🤣🤣")
+
             # print("tính trung bình sau 10 lần")
             avg1.set(handleAvg(arr_avg1))
             avg2.set(handleAvg(arr_avg2))
@@ -219,39 +220,37 @@ def start_thread():
             frame_status.after(time_loop, start_thread)
         else:
             count.set(count.get() + 1)
-
-            # Gửi dữ liệu cho cả hai cảm biến
             connect.start(connect_COM)
             handle_data.start(handle_data_mutate)
-            # save_data_excel_ngay()
+            save_data_excel_ngay()
             print("Status nút: ", button_status.get())
             frame_status.after(time_loop, start_thread)
     else:
         handle_data.start(handle_data_mutate)
-        if len(arr_avg1) >= 2 and len(arr_avg2) >= 2:
+        if len(arr_avg1) >= 10 and len(arr_avg2) >= 10:
             # print("tính trung bình sau 10 lần")
             avg1.set(handleAvg(arr_avg1))
             avg2.set(handleAvg(arr_avg2))
 
+            print("arr_avg1", arr_avg1)
+            print("arr_avg1", arr_avg2)
             
-            # save_data_excel_tb(avg1, avg2, arr_avg1, arr_avg2, value1, value2,
-            #                    threshold_value_1, threshold_value_2, time_clean1, time_clean2)
+            save_data_excel_tb(avg1, avg2, arr_avg1, arr_avg2, value1, value2,
+                               threshold_value_1, threshold_value_2, time_clean1, time_clean2)
             arr_avg2.clear()
             arr_avg1.clear()
             count.set(0)
             frame_status.after(time_loop, start_thread)
-        elif len(arr_avg1) < 2:
+        elif len(arr_avg1) < 10:
             data_send = send_packet(6,0,0x54)
             frame_status.after(time_ask_loop, start_thread)
-
-        elif len(arr_avg2) < 2:
+        elif len(arr_avg2) < 10:
             data_send = send_packet(6,1,0x54)
             frame_status.after(time_ask_loop, start_thread)
-
-            
-        elif len(arr_avg1) > 2 and len(arr_avg2) > 2:
+        elif len(arr_avg1) > 10 and len(arr_avg2) > 10:
             arr_avg2.clear()
             arr_avg1.clear()
             count.set(0)
             frame_status.after(time_loop, start_thread)
-    print("----------------------------------------------", count.get(),"-----------------------------------------------")
+    print("----------------------------------------------", count.get(),
+          "-----------------------------------------------")

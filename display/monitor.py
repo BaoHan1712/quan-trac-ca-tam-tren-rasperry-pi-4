@@ -1,7 +1,7 @@
 from cover.imports import *
 from data_processing.data_processing import *
 import time as t
-from send_UART import send_packet
+from send_UART import *
 
 # hàm tạo nút nhấn
 def create_ctk_button(
@@ -111,7 +111,8 @@ def create_frame(root, threshold_value, time_clean, port, sensor_id):
         frame.destroy()
 
     def send_clean():
-        send_packet(6,sensor_id,0x54)
+        send_packet(6,sensor_id,0x53)
+        print("đang vệ sinh")
         show_countdown_dialog(
             "Thông báo", f"Đang vệ sinh cảm biến {sensor_id+1}!", 3)
 
