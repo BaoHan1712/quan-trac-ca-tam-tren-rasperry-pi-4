@@ -26,22 +26,25 @@ def get_data_com(value, arr_avg, sensor):
     if (data):
         if (status == 0x57):
             if (id ==  0):
-                print("da luu vao excel ❤️ voi id 0")
-                save_data_excel_ngay(None, None, data, None)
+                print("da luu vao excel  ❤️   voi id 0")
+                hi =save_data_excel_ngay(None, None, data, None)
+
             elif (id == 1):
-                print("da luu vao excel ❤️ voi id 1")
+                print("da luu vao excel  ❤️   voi id 1")
                 save_data_excel_ngay(None, None, None, data)
 
     #Cảm biến gửi giá trị khi được gateway hỏi
         elif (status == 0x54):
             value.set(data)
             arr_avg.append(data)
+
             
         elif (status == 192):
             if (id == 0):
                 threshold_value_1.set(data)
             elif (id == 1):
                 threshold_value_2.set(data)
+
         elif (status == 191):
             if (id == 0):
                 sio.emit('threshold-device', {
@@ -84,10 +87,10 @@ def get_data_button(sensor):
     if (data == 1):
         print("Nút bấm đã được nhấn")
         ring_status.set("Đang Tắt")
-        turn_off_ring(port)
+        turn_off_ring()
 
 # Hàm bật chuông ||| xong
-def turn_on_ring(port):
+def turn_on_ring():
     print("Chuông báo 🔔🔔🔔🔔🔔🔔🔔🔔🔔🔔🔔🔔🔔🔔")
     # data_send = cmdString_one(6, 9, 1)
     for _ in range(3):  # Gửi 3 lần
@@ -95,7 +98,7 @@ def turn_on_ring(port):
         time.sleep(3)
 
 # Hàm tắt chuông||| Xong
-def turn_off_ring(port):
+def turn_off_ring():
     print("Tắt Chuông báo ❌❌❌❌❌❌❌❌🔔🔔🔔🔔🔔🔔🔔🔔")
     # data_send = cmdString_one(6, 9, 0)
     for _ in range(6):  
@@ -106,29 +109,27 @@ def turn_off_ring(port):
 def connect_COM():
     # Gửi dữ liệu cho cả hai cảm biến và đọc phản hồi liên tục
     for sensor_id in (0, 1):
-        data_send = send_packet(6,sensor_id,0x54)
+        send_packet(6, sensor_id, 0x54)
         time.sleep(2)
 
 
 
 # Hàm kiểm tra cổng || Xong
 def check_com():
-    data_send = send_packet(6,0,0x54)
+    data_send = send_packet(6, 0, 0x54)
     print("đang chờ nhận tín hiệu để mở app")
     data =receive_packet_all()
     if data:
-        id = data[0]
-        if (id == 7):
+        fromID = data[0]
+        if (fromID == 7):
             print("Check chuông báo lần đầu!!!")
             return
 
 
-# kiểm tra độ đục của nước từ 2CB, gửi thông báo về tình trạng nước.
 def handle_check_mutate(port, value1, value2, avg1, avg2, threshold_value_1, threshold_value_2, status1, status2, ring_status):
     check_1 = False
     check_2 = False
 
-# Kiểm tra và xử lý cảm biến 1
     value_compare_1 = value1.get() - avg1.get()
     if value_compare_1 > threshold_value_1.get():
         check_1 = True
@@ -144,7 +145,7 @@ def handle_check_mutate(port, value1, value2, avg1, avg2, threshold_value_1, thr
             "sensor": "0",
             "status": "C"
         })
-# Kiểm tra và xử lý cảm biến 2
+
     value_compare_2 = value2.get() - avg2.get()
     if value_compare_2 > threshold_value_2.get():
         check_2 = True
@@ -167,9 +168,6 @@ def handle_check_mutate(port, value1, value2, avg1, avg2, threshold_value_1, thr
     print("Giá trị đột biến 2: ", value_compare_2)
     # print(check_1)
     # print(check_2)
-
-    """Nếu phát hiện đục thì kích hoạt chuông"""
-    
     if check_1 or check_2:
         print("Đột biến 💥💥💥💥💥💥💥💥💥💥💥💥")
         if button_status.get() == 0:

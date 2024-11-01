@@ -30,17 +30,18 @@ def send_data(device, status):
 
 
 # Hàm đọc port 
-def read_from_port( data_queue, restart_app):
+def read_from_port( port, data_queue, restart_app):
     while True:
         try:
             data = receive_packet_all()
             if data:
                 data_queue.put(data)
+                print("đã đưa vào hàng đợi")
 
         except serial.SerialException as e:
             print(f"Error: {e}")
             root.after(4000, restart_app)
-        time.sleep(1)
+       
 
 
 def filter_data(event):
@@ -119,7 +120,7 @@ def first_run():
 
 
 # Hàm xử lý dữ liệu
-def process_data(data_queue):
+def process_data( data_queue):
     while True:
         # Lấy gói dữ liệu từ hàng đợi
         data = data_queue.get()
@@ -132,11 +133,13 @@ def process_data(data_queue):
             # Xử lý theo toID
             id = fromID
             if id == 0:
+             
                 sio.emit('device-status-connect', {
                     "device": "0",
                     "isConnected": True,
                     "type": "S"
                 })
+            
                 get_data_com(value1, arr_avg1, data)
                 print("Data gửi từ cảm biến 1:", value1.get(), arr_avg1)
 
@@ -152,6 +155,7 @@ def process_data(data_queue):
             elif id == 7:
                 print("Check tín hiệu chuông báo!!!")
                 get_data_button(data)
+
             elif id in [2, 4, 3, 5, 9]:
                 print('Dữ liệu chuông báo 👌👌👌👌👌')
                 sio.emit('device-status-connect', {
@@ -183,10 +187,9 @@ def process_data(data_queue):
 
 # Hàm nghe tín hiệu,  và xử lý tín hiệu gửi lên
 def listen_data_thread(restart_app):
-    # Đã sửa
-    threading.Thread(target=read_from_port, args=( data_queue, restart_app), daemon=True).start()
-    
-    """Cần sửa lại"""
+    # listen.start(listen_data, restart_app=restart_app)
+    threading.Thread(target=read_from_port, args=(
+        port, data_queue, restart_app), daemon=True).start()
     threading.Thread(target=process_data, args=(
         data_queue,), daemon=True).start()
 
@@ -203,9 +206,9 @@ def handle_data_mutate():
 def start_thread():
     if count.get() < 10:
         if len(arr_avg1) > 10 and len(arr_avg2) > 10:
-
+            # print("len(arr_avg1): ", len(arr_avg1))
+            # print("len(arr_avg2): ", len(arr_avg2))
             print("Da vao day 🤣🤣🤣🤣🤣🤣🤣🤣🤣🤣🤣🤣🤣🤣🤣")
-
             # print("tính trung bình sau 10 lần")
             avg1.set(handleAvg(arr_avg1))
             avg2.set(handleAvg(arr_avg2))
@@ -217,6 +220,8 @@ def start_thread():
             arr_avg1.clear()
             frame_status.after(time_loop, start_thread)
         else:
+            # print("len(arr_avg1): ", len(arr_avg1))
+            # print("len(arr_avg2): ", len(arr_avg2))
             count.set(count.get() + 1)
             connect.start(connect_COM)
             handle_data.start(handle_data_mutate)
@@ -229,10 +234,8 @@ def start_thread():
             # print("tính trung bình sau 10 lần")
             avg1.set(handleAvg(arr_avg1))
             avg2.set(handleAvg(arr_avg2))
-
-            print("arr_avg1", arr_avg1)
-            print("arr_avg1", arr_avg2)
-            
+            # print("arr_avg1", arr_avg1)
+            # print("arr_avg1", arr_avg2)
             save_data_excel_tb(avg1, avg2, arr_avg1, arr_avg2, value1, value2,
                                threshold_value_1, threshold_value_2, time_clean1, time_clean2)
             arr_avg2.clear()
@@ -240,10 +243,10 @@ def start_thread():
             count.set(0)
             frame_status.after(time_loop, start_thread)
         elif len(arr_avg1) < 10:
-            data_send = send_packet(6,0,0x54)
+            send_packet(6, 0, 0x54)
             frame_status.after(time_ask_loop, start_thread)
         elif len(arr_avg2) < 10:
-            data_send = send_packet(6,1,0x54)
+            send_packet(6, 0, 0x54)
             frame_status.after(time_ask_loop, start_thread)
         elif len(arr_avg1) > 10 and len(arr_avg2) > 10:
             arr_avg2.clear()
@@ -252,3 +255,4 @@ def start_thread():
             frame_status.after(time_loop, start_thread)
     print("----------------------------------------------", count.get(),
           "-----------------------------------------------")
+

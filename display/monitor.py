@@ -43,26 +43,33 @@ def create_frame(root, threshold_value, time_clean, port, sensor_id):
         # Set giá trị đột biến cảm biến 1
         data_send = cmdString_two(6, sensor_id, 191, new_threshold_value)
         port.write(data_send)
+
+        # send_packet(6, sensor_id, 191, new_threshold_value)
+        t.sleep(2)
+
+        port.write(data_send)
+        # send_packet(6, sensor_id, 191, new_threshold_value)
         t.sleep(2)
         port.write(data_send)
-        t.sleep(2)
-        port.write(data_send)
+        # send_packet(6, sensor_id, 191, new_threshold_value)
         print("Gui gia tri nguong dot bien")
 
     def send_change_clean(time):
         data_send = cmdString_two(6, sensor_id, 200, time)
+        # send_packet(6, sensor_id, 200, time)
         port.write(data_send)
         t.sleep(2)
+        # send_packet(6, sensor_id, 200, time)
         port.write(data_send)
         t.sleep(2)
+        # send_packet(6, sensor_id, 200, time)
         port.write(data_send)
         print(data_send)
         print("Gui ve sinh")
 
     def onSubmit():
         try:
-            # desktop = os.path.join(os.path.join(
-            #     os.environ["USERPROFILE"]), "Desktop")
+
             output_dir = "C:\cai_dat_catam"
             df = pd.read_excel(os.path.join(output_dir, "cai_dat_catam.xlsx"))
 
@@ -140,6 +147,7 @@ def create_frame(root, threshold_value, time_clean, port, sensor_id):
         entry2.configure(textvariable=threshold_value)
 
     frame = ctk.CTkFrame(root, fg_color="white", border_width=1)
+
     # Điều khiển vệ sinh
     label0 = ctk.CTkLabel(frame, text=f"Cài đặt cảm biến {sensor_id+1}", font=("Monserrat", 30, "bold"), text_color="#2DBD91")
     label0.grid(row=0, column=1, padx=40, pady=20, sticky="w")
@@ -158,12 +166,13 @@ def create_frame(root, threshold_value, time_clean, port, sensor_id):
         hover_color="#1b5946",
     )
     buttonClean.grid(row=1, column=2, padx=40, pady=5)
+
     # Hẹn giờ vệ sinh cảm biến
-    label2 = ctk.CTkLabel(frame, text="Hẹn giờ vệ sinh cảm biến", font=(
-        "Monserrat", 20, "bold"), text_color="#2DBD91")
+    label2 = ctk.CTkLabel(frame, text="Hẹn giờ vệ sinh cảm biến", font=("Monserrat", 20, "bold"), text_color="#2DBD91")
     label2.grid(row=2, column=1, padx=40, pady=10, sticky="w")
     # entry1 = ctk.CTkEntry(frame)
     # entry1.grid(row=2, column=1, padx=10, ipadx=50)
+    
     time = ctk.CTkEntry(frame, placeholder_text="  Hẹn giờ vệ sinh cảm biến", state="normal",
                         fg_color="white", font=("Monserrat", 13, "bold"), text_color="#000", height=40)
     time.grid(row=3, column=1, padx=40, pady=10, ipadx=50, sticky="w")

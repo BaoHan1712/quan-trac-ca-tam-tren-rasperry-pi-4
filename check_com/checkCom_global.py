@@ -74,8 +74,8 @@ except socketio.exceptions.ConnectionError as e:
 
 #-------------------------------------------Giao Diện------------------------------------------------
 root = ctk.CTk()
-time_loop = 40 * 1000
-time_ask_loop = 10 * 1000
+time_loop = 5 * 1000
+time_ask_loop = 2 * 1000
 scrW = root.winfo_screenwidth()
 scrH = root.winfo_screenheight()
 root.title("APP CÁ TẦM")
