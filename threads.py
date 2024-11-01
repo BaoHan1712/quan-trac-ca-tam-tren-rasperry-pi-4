@@ -24,10 +24,13 @@ def send_data(device, status):
             time.sleep(2)
     else:
         return 'không xác định'
+    
+    print("Data send từ socket: ", data_send)
+
 
 
 # Hàm đọc port 
-def read_from_port(port, data_queue, restart_app):
+def read_from_port( data_queue, restart_app):
     while True:
         try:
             data = receive_packet_all()
@@ -58,7 +61,8 @@ def filter_data(event):
         # data_send1 = cmdString_two(6, device, 200, timeClean)
         # port.write(data_send1)
 
-        data_send1 = send_packet(6, device, 0x53, [timeClean])
+        # Thay đổi thời gian vệ sinh
+        data_send1 = send_packet(6, device, 200, [timeClean])
         data_send2 = cmdString_two(6, device, 191, threshold)
         port.write(data_send2)
         return
@@ -70,7 +74,7 @@ def filter_data(event):
     if event.get('timeClean') is not None:
         timeClean = int(event.get('timeClean'))
         df.iloc[0, 7] = int(timeClean)
-        send_packet(6, device, 0x53, [timeClean])
+        send_packet(6, device, 200, [timeClean])
 
         # data_send = cmdString_two(6, device, 200, timeClean)
         # port.write(data_send)
@@ -126,7 +130,7 @@ def process_data(data_queue):
             print("😁😁😁😁😁😁😁😁😁😁😁😁 sensor data: ", data)
 
             # Xử lý theo toID
-            id = toID
+            id = fromID
             if id == 0:
                 sio.emit('device-status-connect', {
                     "device": "0",
@@ -134,7 +138,8 @@ def process_data(data_queue):
                     "type": "S"
                 })
                 get_data_com(value1, arr_avg1, data)
-                print("Data gửi từ cảm biến 1: ", value1.get(), arr_avg1)
+                print("Data gửi từ cảm biến 1:", value1.get(), arr_avg1)
+
             elif id == 1:
                 sio.emit('device-status-connect', {
                     "device": "1",
@@ -179,8 +184,7 @@ def process_data(data_queue):
 # Hàm nghe tín hiệu,  và xử lý tín hiệu gửi lên
 def listen_data_thread(restart_app):
     # Đã sửa
-    threading.Thread(target=read_from_port, args=(
-        port, data_queue, restart_app), daemon=True).start()
+    threading.Thread(target=read_from_port, args=( data_queue, restart_app), daemon=True).start()
     
     """Cần sửa lại"""
     threading.Thread(target=process_data, args=(

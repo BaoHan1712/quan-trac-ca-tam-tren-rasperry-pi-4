@@ -58,7 +58,7 @@ def save_data_excel_ngay(value_1=1, value_2=1, mutation_value_1=None, mutation_v
         "mutation_value_2": "" if mutation_value_2 is None else mutation_value_2,
     }
     if value_1 is None or value_2 is None:
-        print("Co dot bien", mutation_value_1, mutation_value_2)
+        print("Co dot bien tu CB", mutation_value_1, mutation_value_2)
     else:
         print("Khong co dot bien", value1.get(), value2.get())
     # Create DataFrame from new data
@@ -71,19 +71,19 @@ def save_data_excel_ngay(value_1=1, value_2=1, mutation_value_1=None, mutation_v
     filename = datetime.datetime.now().strftime("data_ca_tam_ngay_%Y-%m-%d.xlsx")
     filepath = os.path.join(output_dir, filename)
 
-    # if os.path.exists(filepath):
-    #     df_existing = pd.read_excel(filepath)
+    if os.path.exists(filepath):
+        df_existing = pd.read_excel(filepath)
 
-    #     # Filter empty/all-NA columns
-    #     df_existing = df_existing.dropna(axis=1, how='all')
-    #     df_existing = df_existing.loc[:, df_existing.notna().any()]
-    #     df_new_data = df_new_data.dropna(axis=1, how='all')
-    #     df_new_data = df_new_data.loc[:, df_new_data.notna().any()]
+        # Filter empty/all-NA columns
+        df_existing = df_existing.dropna(axis=1, how='all')
+        df_existing = df_existing.loc[:, df_existing.notna().any()]
+        df_new_data = df_new_data.dropna(axis=1, how='all')
+        df_new_data = df_new_data.loc[:, df_new_data.notna().any()]
 
-    #     # Concatenate
-    #     df_global = pd.concat([df_existing, df_new_data], ignore_index=True)
-    # else:
-        # df_global = df_new_data
+        # Concatenate
+        df_global = pd.concat([df_existing, df_new_data], ignore_index=True)
+    else:
+        df_global = df_new_data
 
     df_global.to_excel(filepath, index=False)
     print("Thông báo!!! Lưu dữ liệu thành công vào Desktop")

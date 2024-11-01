@@ -3,71 +3,75 @@ from cover.imports import *
 from check_com.checkCom_global import *
 from send_UART import *
 
-# Xong
+# Đặt khoảng giá trị đột biến
 def get_setting_data():
-    send_packet(6, 0,0x54)
-    send_packet(6, 1,0x54)
+    send_packet(6, 0,0x44)
+    send_packet(6, 1,0x44)
+
+# def check_button_on(port):
+#     data_send = cmdString_one(6, 7, 255)
+    
+
 
 # Hàm quan trọng nhận dữ liệu rôi xử lý
 def get_data_com(value, arr_avg, sensor):
+    # Check dữ liệu từ cảm biến
+    print("❤️❤️❤️❤️❤️❤️❤️❤️", sensor)
  
     fromID, toID, title, data_receive = sensor
+    data = data_receive[0]
+    id = fromID
+    status = title
     
+    if (data):
+        if (status == 0x57):
+            if (id ==  0):
+                print("da luu vao excel ❤️ voi id 0")
+                save_data_excel_ngay(None, None, data, None)
+            elif (id == 1):
+                print("da luu vao excel ❤️ voi id 1")
+                save_data_excel_ngay(None, None, None, data)
 
-    if sensor:
-        if len(data_receive) >= 2:
-            data_value1, data_value2 = data_receive 
-    # Chủ động gửi giá trị bất thương
-        if title == 0x57:
-            if fromID == 0:
-                print("test 1")
-                # save_data_excel_ngay(None, None, data_receive, None)
-            elif fromID == 1:
-                print("test 2")
-                # save_data_excel_ngay(None, None, None, data_receive)
-
-        elif title == 0x54:
-            value.set(data_value1)  
-            arr_avg.append(data_value1)  
-
-        elif title == 0x57:
-            if fromID == 0:
-                threshold_value_1.set(data_value1)  
-            elif fromID == 1:
-                threshold_value_2.set(data_value1) 
-
-        elif title == 0x57:
-            if fromID == 0:
+    #Cảm biến gửi giá trị khi được gateway hỏi
+        elif (status == 0x54):
+            value.set(data)
+            arr_avg.append(data)
+            
+        elif (status == 192):
+            if (id == 0):
+                threshold_value_1.set(data)
+            elif (id == 1):
+                threshold_value_2.set(data)
+        elif (status == 191):
+            if (id == 0):
                 sio.emit('threshold-device', {
-                    "device": fromID,
-                    "threshold": data_value1, 
+                    "device": int(id),
+                    "threshold": data,
                     "type": "S"
                 })
-            elif fromID == 1:
+            elif (id == 1):
                 sio.emit('threshold-device', {
-                    "device": fromID,
+                    "device": int(id),
                     "status": 1,
                     "type": "S"
                 })
-
-        elif title == 0x53:
-            if fromID == 0:
+        elif (status == 201):
+            if (id == 0):
                 sio.emit('time-clean', {
-                    "device": fromID,
-                    "timeClean": data_value1,  
+                    "device": int(id),
+                    "timeClean": data,
                     "type": "S"
                 })
-            elif fromID == 1:
+            elif (id == 1):
                 sio.emit('time-clean', {
-                    "device": fromID,
-                    "timeClean": data_value1,  
+                    "device": int(id),
+                    "timeClean": data,
                     "type": "S"
                 })
-                
-        elif title == 0x53:
+        elif (data == 204):
             print("Đã vào đây 😘😘😘😘😘😘😘😘😘😘😘")
             sio.emit('device-status-running', {
-                "device": fromID,
+                "device": int(id),
                 "status": 1,
                 "type": "S"
             })
@@ -75,7 +79,7 @@ def get_data_com(value, arr_avg, sensor):
 
 
 def get_data_button(sensor):
-    data = sensor[4]
+    data = sensor[3]
     button_status.set(data)
     if (data == 1):
         print("Nút bấm đã được nhấn")
@@ -87,7 +91,7 @@ def turn_on_ring(port):
     print("Chuông báo 🔔🔔🔔🔔🔔🔔🔔🔔🔔🔔🔔🔔🔔🔔")
     # data_send = cmdString_one(6, 9, 1)
     for _ in range(3):  # Gửi 3 lần
-        data_send = send_packet(6,7,0x43,[0x62])
+        send_packet(6,7,0x43,0x62)
         time.sleep(3)
 
 # Hàm tắt chuông||| Xong
@@ -111,7 +115,12 @@ def connect_COM():
 def check_com():
     data_send = send_packet(6,0,0x54)
     print("đang chờ nhận tín hiệu để mở app")
-    receive_packet_all()
+    data =receive_packet_all()
+    if data:
+        id = data[0]
+        if (id == 7):
+            print("Check chuông báo lần đầu!!!")
+            return
 
 
 # kiểm tra độ đục của nước từ 2CB, gửi thông báo về tình trạng nước.
