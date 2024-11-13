@@ -101,16 +101,13 @@ def get_data_com(value, arr_avg, sensor, pin_cb):
  
     fromID, toID, title, data_receive = sensor
     
-    # # # Thêm kiểm tra data_receive
+    # # Thêm kiểm tra data_receive
     # if not data_receive or len(data_receive) < 2:
     #     print("Không nhận được dữ liệu hợp lệ từ cảm biến")
     #     return
         
     data = data_receive[0]
-    try:
-        pin = data_receive[1]
-    except:
-        pin = 0
+    pin = data_receive[1]
     id = fromID
     status = title
     
@@ -304,28 +301,34 @@ def handle_check_mutate(value1, value2, avg1, avg2, threshold_value_1, threshold
     global value_compare_list_2
 
     # Xử lý cảm biến 1 độc lập
-    value_compare_1 = value1.get() - avg1.get()
-    if value_compare_1 > threshold_value_1.get():
-        check_1 = True
-        sio.emit('water-status', {
-            "sensor": "0",
-            "status": "D"
-        })
-        mutation_value_1.set(value_compare_1)
-        status1.set("Nuoc Duc")
-        print("Cảm biến 1: Đã vượt ngưỡng 🔔")
-        
-        if SENSOR2_STATUS == "Offline":
-            print("Cảm biến 1 đột biến, cảm biến 2 offline - Bật chuông và đèn") 
-            turn_on_ring()
-            turn_on_led()
-    else:
-        if SENSOR1_STATUS == "Online":
+    if SENSOR1_STATUS == "Online":
+        value_compare_1 = value1.get() - avg1.get()
+        if value_compare_1 > threshold_value_1.get():
+            print("❌CB1 Da nhan ĐB lan 1 ")
+            value_compare_list_1.append(value_compare_1)
+        else:
             status1.set("Bình Thuong")
             sio.emit('water-status', {
-                "sensor": "0", 
-            "status": "C"
-        })
+                "sensor": "0",
+                "status": "C" 
+            })
+    
+        if len(value_compare_list_1) == 2:
+            if all(value > threshold_value_1.get() for value in value_compare_list_1):
+                check_1 = True
+                sio.emit('water-status', {
+                    "sensor": "0", 
+                    "status": "D"
+                })
+                mutation_value_1.set(value_compare_1)
+                status1.set("Nuoc Duc")
+                print("Cảm biến 1: Cả hai lần hỏi đều vượt ngưỡng 🔔🔔")
+                value_compare_list_1.clear()
+                
+    if SENSOR2_STATUS == "Offline" and check_1:
+        print("Cảm biến 1 đột biến, cảm biến 2 offline - Bật chuông và đèn") 
+        turn_on_ring()
+        turn_on_led()
 
 
     # Xử lý cảm biến 2 - chỉ cần 1 lần vượt ngưỡng

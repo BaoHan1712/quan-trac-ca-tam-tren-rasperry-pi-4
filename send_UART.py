@@ -32,7 +32,6 @@ def send_packet(fromID, toID, title, data=[]):
     print("Packet sent:", packet)
 
 # Hàm nhận dữ liệu trả lên
-
 def receive_packet_all():
     while True:
         # Tìm START_BYTE
@@ -90,4 +89,3 @@ def receive_packet_all():
         print("Gói tin nhận thành công:", fromID, toID, title, data)
         
         return fromID, toID, title, data
-    

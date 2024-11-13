@@ -25,7 +25,7 @@ def check_connection():
     while True:
         comport = connect_to_first_comport()
         if comport: 
-            if comport == "COM8":
+            if comport == "/dev/ttyUSB0":
                 try:
                     port = serial.Serial(comport, 9600, timeout=1, bytesize=serial.EIGHTBITS)
                     print(f"Đã kết nối đến {port}")
@@ -42,7 +42,7 @@ def check_connection():
             time.sleep(3)  
 
 try:
-    port = serial.Serial("COM8", 9600, timeout=1, bytesize=serial.EIGHTBITS)
+    port = serial.Serial("/dev/ttyUSB0", 9600, timeout=1, bytesize=serial.EIGHTBITS)
 except serial.SerialException as e:
     connect_thread = threading.Thread(target=check_connection, daemon=True)
     connect_thread.start()
@@ -74,46 +74,50 @@ except socketio.exceptions.ConnectionError as e:
 
 #-------------------------------------------Giao Diện------------------------------------------------
 root = ctk.CTk()
-time_loop = 5 * 1000
-time_ask_loop = 2 * 1000
+time_loop = 15 * 1000
+time_ask_loop = 5 * 1000
 scrW = root.winfo_screenwidth()
 scrH = root.winfo_screenheight()
 root.title("APP CÁ TẦM")
 
 # Biến trạng thái
-threshold_value_1 = tk.IntVar(value=40)
-threshold_value_2 = tk.IntVar(value=40)
-status1 = tk.StringVar(value="Bình thường")
-status2 = tk.StringVar(value="Bình thường")
+threshold_value_1 = tk.IntVar(value=30)
+threshold_value_2 = tk.IntVar(value=30)
+status1 = tk.StringVar(value="Bình thuong")
+status2 = tk.StringVar(value="Bình thuong")
 value1 = tk.IntVar()
 value2 = tk.IntVar()
 mutation_value_1 = tk.IntVar()
 mutation_value_2 = tk.IntVar()
 
+pin_CB_1 = tk.IntVar()
+pin_CB_2 = tk.IntVar()
+
 # Các biến khác
 arr_avg1 = []
 arr_avg2 = []
 
-avg1 = tk.IntVar(value=212)
-avg2 = tk.IntVar(value=220)
+avg1 = tk.IntVar(value=600)
+avg2 = tk.IntVar(value=550)
 count = tk.IntVar(value=0)
-ring_status = tk.StringVar(value="Đang Tắt")
+ring_status = tk.StringVar(value="Đang Tat")
 button_status = tk.IntVar()
 time_clean1 = tk.IntVar(value=10)
 time_clean2 = tk.IntVar(value=10)
 first_run_bool = tk.BooleanVar(root, True)
 pass_login = tk.StringVar(value="ctydaphu")
 
-frame_main = ctk.CTkFrame(root, fg_color="white", bg_color="white", height=1080, width=1920)
-frame_body_main = ctk.CTkFrame(frame_main, fg_color="white", height=780, width=1920)
-frame = ctk.CTkFrame(frame_body_main, fg_color="white", bg_color="white", width=960)
-frame_header = ctk.CTkFrame(frame_main, fg_color="white", bg_color="white", height=100)
-frame_body = ctk.CTkFrame(frame, fg_color="white", bg_color="white", width=960)
-frame_status = ctk.CTkFrame(frame_body, fg_color="white", bg_color="white", width=960, height=780,)
+frame_main = ctk.CTkFrame(root, fg_color="white", bg_color="white", height=1080, width=1890)
+frame_body_main = ctk.CTkFrame(frame_main, fg_color="white", height=480, width=1890)
+frame = ctk.CTkFrame(frame_body_main, fg_color="white", bg_color="white", width=920)
+frame_header = ctk.CTkFrame(frame_main, fg_color="white", bg_color="white", height=70)
+frame_body = ctk.CTkFrame(frame, fg_color="white", bg_color="white", width=920)
+frame_status = ctk.CTkFrame(frame_body, fg_color="white", bg_color="white", width=840, height=780,)
 frame_status_1 = ctk.CTkFrame(frame_status, fg_color="#FF911A", corner_radius=10)
-frame_status_2 = ctk.CTkFrame(frame_status, fg_color="#FF911A", height=500, width=960, corner_radius=10)
+frame_status_2 = ctk.CTkFrame(frame_status, fg_color="#FF911A", height=500, width=920, corner_radius=10)
+
 frame_chart = ctk.CTkFrame(frame_body_main, fg_color="white")
 frame_chart_1 = ctk.CTkFrame(frame_chart)
 frame_chart_2 = ctk.CTkFrame(frame_chart, fg_color="white", bg_color="white")
-frame_footer = ctk.CTkFrame(frame_main, fg_color="white", bg_color="white", height=100, width=1920)
+frame_footer = ctk.CTkFrame(frame_main, fg_color="white", bg_color="white", height=80, width=1890)
 frame_setting = ctk.CTkFrame(frame_body, fg_color="white", bg_color="white")

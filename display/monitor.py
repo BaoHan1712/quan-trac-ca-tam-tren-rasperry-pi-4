@@ -26,7 +26,7 @@ def create_ctk_button(
         command=command,
         width=width,
         height=height,
-        font=("Consolas", 12, "bold"),
+        font=("Arial", 12, "bold"),
         fg_color=fg_color,
         text_color=text_color,
         border_color=border_color,
@@ -41,87 +41,87 @@ def create_frame(root, threshold_value, time_clean, port, sensor_id):
 
     def send_mutate(new_threshold_value):
         # Set giá trị đột biến cảm biến 1
-        data_send = cmdString_two(6, sensor_id, 191, new_threshold_value)
-        port.write(data_send)
+        # data_send = cmdString_two(6, sensor_id, 191, new_threshold_value)
 
-        # send_packet(6, sensor_id, 191, new_threshold_value)
-        t.sleep(2)
+        send_packet(6, sensor_id, 0x44, [new_threshold_value])
+ 
+        print(f"😁Gui gia tri nguong dot bien 😁, new_threshold_value: {new_threshold_value}")
 
-        port.write(data_send)
-        # send_packet(6, sensor_id, 191, new_threshold_value)
-        t.sleep(2)
-        port.write(data_send)
-        # send_packet(6, sensor_id, 191, new_threshold_value)
-        print("Gui gia tri nguong dot bien")
+    def send_change_clean(time_change_lean):
 
-    def send_change_clean(time):
-        data_send = cmdString_two(6, sensor_id, 200, time)
-        # send_packet(6, sensor_id, 200, time)
-        port.write(data_send)
-        t.sleep(2)
-        # send_packet(6, sensor_id, 200, time)
-        port.write(data_send)
-        t.sleep(2)
-        # send_packet(6, sensor_id, 200, time)
-        port.write(data_send)
-        print(data_send)
-        print("Gui ve sinh")
+        # data_send = cmdString_two(6, sensor_id, 200, time_clean_button)
+        send_packet(6, sensor_id, 0x61,[time_change_lean])
+
+        print(f"😁 Gui thoi gian ve sinh 😁, time_change_lean: {time_change_lean}")
 
     def onSubmit():
         try:
 
-            output_dir = "C:\cai_dat_catam"
+            output_dir = "/home/ailab/Downloads/luu_ca_tam"
             df = pd.read_excel(os.path.join(output_dir, "cai_dat_catam.xlsx"))
 
             new_threshold_value = entry3.get()
             if new_threshold_value:
                 new_threshold_value = int(new_threshold_value)
-                threshold_value.set(new_threshold_value)
             else:
                 new_threshold_value = 0
-            if new_threshold_value and time.get():
-                send_change_clean(time.get())
+            time_clean_change = time_clean_button.get()
+            
+            if time_clean_change.isdigit():  
+                time_clean_change = int(time_clean_change) 
+
+            if new_threshold_value and time_clean_change:
+
+                send_change_clean(time_clean_change)
+
                 send_mutate(new_threshold_value)
+
                 if (sensor_id == 0):
                     df.iloc[0, 7] = int(new_threshold_value)
-                    df.iloc[0, 9] = int(time.get())
+                    df.iloc[0, 9] = int(time_clean_change)
                 else:
                     df.iloc[0, 8] = int(new_threshold_value)
-                    df.iloc[0, 10] = int(time.get())
-            elif new_threshold_value or time.get():
+                    df.iloc[0, 10] = int(time_clean_change)
+
+                    
+            elif new_threshold_value or time_clean_change:
                 if new_threshold_value:
                     send_mutate(new_threshold_value)
                     if (sensor_id == 0):
                         df.iloc[0, 7] = int(new_threshold_value)
                     else:
                         df.iloc[0, 8] = int(new_threshold_value)
-                elif time.get():
-                    send_change_clean(time.get())
+                elif time_clean_change:
+                    send_change_clean(time_clean_change)
                     if (sensor_id == 0):
                         print("save time clean 1")
-                        df.iloc[0, 9] = int(time.get())
+                        df.iloc[0, 9] = int(time_clean_change)
                     else:
                         print("save time clean 1")
-                        df.iloc[0, 10] = int(time.get())
-            if not new_threshold_value and not time.get():
-                messagebox.showwarning("Thông báo", f"Không thể lưu giá trị!")
+                        df.iloc[0, 10] = int(time_clean_change)
+
+            if not new_threshold_value and not time_clean_change:
+                messagebox.showwarning("Thong bao", f"Khong the luu gia tri!")
                 return
+        ## Lưu Dữ liệu mới vào cài đặt excel
             df.to_excel(os.path.join(
                 output_dir, "cai_dat_catam.xlsx"), index=False)
             messagebox.showinfo(
-                "Thông báo", f"Đã lưu cài đặt cảm biến { sensor_id + 1} thành công!")
-            frame.destroy()
+                "Thong bao", f"Da luu { sensor_id + 1} thanh cong!")
+            # frame.destroy()
         except Exception as e:
             print(e)
+            messagebox.showerror("Loi", f"Da xay ra loi: {e}")
+
 
     def onCancel():
         frame.destroy()
 
     def send_clean():
         send_packet(6,sensor_id,0x53)
-        print("đang vệ sinh")
+        print("dang ve sinh")
         show_countdown_dialog(
-            "Thông báo", f"Đang vệ sinh cảm biến {sensor_id+1}!", 3)
+            "Thong bao", f"Dang ve sinh cam bien {sensor_id+1}!", 3)
 
     def show_countdown_dialog(title, message, countdown_time):
         def countdown(count):
@@ -137,7 +137,7 @@ def create_frame(root, threshold_value, time_clean, port, sensor_id):
         root = tk.Toplevel()
         root.geometry(f"320x160+{scrW//2+150}+{scrH//2-200}")
         root.title(title)
-        label = ctk.CTkLabel(root, text="", font=("Monserrat", 20, "bold"), text_color="#F78F1E")
+        label = ctk.CTkLabel(root, text="", font=("Arial", 20, "bold"), text_color="#F78F1E")
         label.pack(fill="both", expand=True, padx=20, pady=40)
         # start countdown
         countdown(countdown_time)
@@ -149,11 +149,11 @@ def create_frame(root, threshold_value, time_clean, port, sensor_id):
     frame = ctk.CTkFrame(root, fg_color="white", border_width=1)
 
     # Điều khiển vệ sinh
-    label0 = ctk.CTkLabel(frame, text=f"Cài đặt cảm biến {sensor_id+1}", font=("Monserrat", 30, "bold"), text_color="#2DBD91")
-    label0.grid(row=0, column=1, padx=40, pady=20, sticky="w")
-    label1 = ctk.CTkLabel(frame, text="Điều khiển vệ sinh", font=(
-        "Monserrat", 20, "bold"), text_color="#2DBD91")
-    label1.grid(row=1, column=1, padx=40, pady=5, sticky="w")
+    label0 = ctk.CTkLabel(frame, text=f"Cai dat cam bien {sensor_id+1}", font=("Arial", 20, "bold"), text_color="#2DBD91")
+    label0.grid(row=0, column=1, padx=20, pady=20, sticky="w")
+    label1 = ctk.CTkLabel(frame, text="Đieu khien ve sinh", font=(
+        "Arial", 20, "bold"), text_color="#2DBD91")
+    label1.grid(row=1, column=1, padx=20, pady=5, sticky="w")
 
     buttonClean = create_ctk_button(
         frame,
@@ -165,24 +165,23 @@ def create_frame(root, threshold_value, time_clean, port, sensor_id):
         image="assets/clean.png",
         hover_color="#1b5946",
     )
-    buttonClean.grid(row=1, column=2, padx=40, pady=5)
+    buttonClean.grid(row=1, column=2, padx=20, pady=5)
 
     # Hẹn giờ vệ sinh cảm biến
-    label2 = ctk.CTkLabel(frame, text="Hẹn giờ vệ sinh cảm biến", font=("Monserrat", 20, "bold"), text_color="#2DBD91")
-    label2.grid(row=2, column=1, padx=40, pady=10, sticky="w")
-    # entry1 = ctk.CTkEntry(frame)
-    # entry1.grid(row=2, column=1, padx=10, ipadx=50)
+    label2 = ctk.CTkLabel(frame, text="Hen gio ve sinh cam bien", font=("Arial", 20, "bold"), text_color="#2DBD91")
+    label2.grid(row=2, column=1, padx=20, pady=10, sticky="w")
     
-    time = ctk.CTkEntry(frame, placeholder_text="  Hẹn giờ vệ sinh cảm biến", state="normal",
-                        fg_color="white", font=("Monserrat", 13, "bold"), text_color="#000", height=40)
-    time.grid(row=3, column=1, padx=40, pady=10, ipadx=50, sticky="w")
+    time_clean_button = ctk.CTkEntry(frame, placeholder_text="  Hen gio ve sinh cam bien", state="normal",
+                        fg_color="white", font=("Arial", 13, "bold"), text_color="#000", height=40)
+    time_clean_button.grid(row=3, column=1, padx=20, pady=10, ipadx=50, sticky="w")
+
     # Lấy giá trị đột biến
-    label3 = ctk.CTkLabel(frame, text="Lấy giá trị đột biến", font=(
-        "Monserrat", 20, "bold"), text_color="#2DBD91")
-    label3.grid(row=4, column=1, padx=40, pady=10, sticky="w")
-    entry2 = ctk.CTkEntry(frame, textvariable="", state="readonly",
-                          fg_color="white", font=("Monserrat", 13, "bold"), text_color="#000", height=40)
-    entry2.grid(row=5, column=1, padx=40, pady=10, ipadx=50, sticky="w")
+    label3 = ctk.CTkLabel(frame, text="Lay gia tri dot bien", font=(
+        "Arial", 20, "bold"), text_color="#2DBD91")
+    label3.grid(row=4, column=1, padx=20, pady=10, sticky="w")
+
+    entry2 = ctk.CTkEntry(frame, textvariable="", state="readonly",fg_color="white", font=("Arial", 13, "bold"), text_color="#000", height=40)
+    entry2.grid(row=5, column=1, padx=20, pady=10, ipadx=50, sticky="w")
 
     buttonTakeData = create_ctk_button(
         frame,
@@ -195,29 +194,29 @@ def create_frame(root, threshold_value, time_clean, port, sensor_id):
         hover_color="#1b5946",
     )
 
-    buttonTakeData.grid(row=5, column=2, padx=40)
+    buttonTakeData.grid(row=5, column=2, padx=20)
 
     # Cài đặt giá trị đột biến
-    label4 = ctk.CTkLabel(frame, text="Cài đặt giá trị đột biến", font=(
-        "Monserrat", 20, "bold"), text_color="#2DBD91")
-    label4.grid(row=6, column=1, padx=40, ipady=10, sticky="w")
-    entry3 = ctk.CTkEntry(frame, placeholder_text="  Cài đặt giá trị đột biến",
-                          fg_color="white", font=("Monserrat", 13, "bold"), text_color="#000", height=40)
-    entry3.grid(row=7, column=1, padx=40, pady=10, ipadx=50, sticky="w")
+    label4 = ctk.CTkLabel(frame, text="Cai dat gia tri dot bien", font=("Arial", 25, "bold"), text_color="#2DBD91")
+    label4.grid(row=6, column=1, padx=20, ipady=10, sticky="w")
+
+    entry3 = ctk.CTkEntry(frame, placeholder_text="  Cai dat gia tri dot bien",fg_color="white", font=("Arial", 13, "bold"), text_color="#000", height=40)
+    entry3.grid(row=7, column=1, padx=20, pady=10, ipadx=50, sticky="w")
 
 
     buttonSubmit = create_ctk_button(
         frame,
         image="assets/check.png",
         command=onSubmit,
-        width=90,
+        width=70,
         height=40,
-        imgW=80,
+        imgW=70,
         imgH=40,
         fg_color="#2DBD91",
         text_color="#FFFFFF",
         hover_color="#1b5946",
     )
     buttonSubmit.grid(row=7, column=2)
+
 
     return frame

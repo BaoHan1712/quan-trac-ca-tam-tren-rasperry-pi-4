@@ -15,38 +15,40 @@ def handleAvg(arr):
         return int(np.mean(arr))
 
 
-#---------------------------------- Lưu DỮU LIỆU VÀO EXCEL-----------------------------
+#---------------------------------- Lưu DỮU LIỆU VÀO EXCEL------------------------
 
 def save_data_excel_tb(avg1, avg2, arr_avg1, arr_avg2, value1, value2, threshold_value_1, threshold_value_2, time_clean1, time_clean2):
+    average_sensor_1 = avg1.get() if avg1 and avg1.get() is not None else 0
+    average_sensor_2 = avg2.get() if avg2 and avg2.get() is not None else 0
+
     data = {
         "time_save": [datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")],
-        "average_sensor_1": [avg1.get() or "No data"],
-        "average_sensor_2": [avg2.get() or "No data"],
+        "average_sensor_1": [average_sensor_1],
+        "average_sensor_2": [average_sensor_2],
         "array_average_1": [arr_avg1 if arr_avg1 is not None else "No data"],
         "array_average_2": [arr_avg2 if arr_avg2 is not None else "No data"],
-        "mutation_value_1": [mutation_value_1.get() or "No data"],
-        "mutation_value_2": [mutation_value_2.get() or "No data"],
-        "threshold_value_sensor_1": [threshold_value_1.get() or "No data"],
-        "threshold_value_sensor_2": [threshold_value_2.get() or "No data"],
+        "mutation_value_1": [value1.get() if value1 and value1.get() is not None else 0],
+        "mutation_value_2": [value2.get() if value2 and value2.get() is not None else 0],
+        "threshold_value_sensor_1": [threshold_value_1.get() if threshold_value_1 and threshold_value_1.get() is not None else 0],
+        "threshold_value_sensor_2": [threshold_value_2.get() if threshold_value_2 and threshold_value_2.get() is not None else 0],
         "time_clean_1": [time_clean1.get() or "No data"],
         "time_clean_2": [time_clean2.get() or "No data"]
     }
-    # desktop = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
 
-    # Lưu ở đâu đó
-    output_dir = "C:\cai_dat_catam"
+    output_dir = "/home/ailab/Downloads/luu_ca_tam"
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
+        
     df = pd.DataFrame(data)
-    df.fillna("No data", inplace=True)  # Thay thế giá trị NaN bằng "No data"
+    df.fillna(0, inplace=True)  # Thay thế giá trị NaN bằng "0"
     df.to_excel(os.path.join(output_dir, "cai_dat_catam.xlsx"), index=False)
-    print("Thông báo", "Lưu dữ liệu vào file data_ca_tam_tb.xlsx thành công")
+    print("Thông báo: Lưu dữ liệu vào file cai_dat_catam.xlsx thành công")
 
 
-    # Tạo DataFrame toàn cục để lưu trữ dữ liệu
-df_global = pd.DataFrame(columns=["time_save", "sensor_1", "sensor_2", "mutation_value_1", "mutation_value_2"])
 
+# Tạo DataFrame toàn cục để lưu trữ dữ liệu
+df_global = pd.DataFrame(columns=[ "time_save", "sensor_1", "sensor_2", "mutation_value_1", "mutation_value_2"])
 
 def save_data_excel_ngay(value_1=1, value_2=1, mutation_value_1=None, mutation_value_2=None):
     global df_global
@@ -57,15 +59,17 @@ def save_data_excel_ngay(value_1=1, value_2=1, mutation_value_1=None, mutation_v
         "mutation_value_1": "" if mutation_value_1 is None else mutation_value_1,
         "mutation_value_2": "" if mutation_value_2 is None else mutation_value_2,
     }
+
     if value_1 is None or value_2 is None:
         print("Co dot bien tu CB", mutation_value_1, mutation_value_2)
     else:
         print("Khong co dot bien", value1.get(), value2.get())
-    # Create DataFrame from new data
+
+    # Tạo DataFrame từ dữ liệu mới
     df_new_data = pd.DataFrame([data])
 
-    desktop = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
-    output_dir = os.path.join(desktop, 'data_catam_ngay')
+    # Đường dẫn lưu file trên Raspberry Pi
+    output_dir = "/home/ailab/Downloads/luu_ca_tam"
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     filename = datetime.datetime.now().strftime("data_ca_tam_ngay_%Y-%m-%d.xlsx")
@@ -74,19 +78,22 @@ def save_data_excel_ngay(value_1=1, value_2=1, mutation_value_1=None, mutation_v
     if os.path.exists(filepath):
         df_existing = pd.read_excel(filepath)
 
-        # Filter empty/all-NA columns
+        # Loại bỏ các cột trống hoặc toàn bộ giá trị NA
         df_existing = df_existing.dropna(axis=1, how='all')
         df_existing = df_existing.loc[:, df_existing.notna().any()]
         df_new_data = df_new_data.dropna(axis=1, how='all')
         df_new_data = df_new_data.loc[:, df_new_data.notna().any()]
 
-        # Concatenate
+        # Gộp dữ liệu
         df_global = pd.concat([df_existing, df_new_data], ignore_index=True)
     else:
         df_global = df_new_data
 
+    # Lưu vào file Excel
     df_global.to_excel(filepath, index=False)
-    print("Thông báo!!! Lưu dữ liệu thành công vào Desktop")
+    print("Thông báo: Lưu dữ liệu thành công vào Raspberry pi 4")
+
+
     # print(df_global)
 
 # Hàm xuất excel
@@ -115,7 +122,7 @@ def export_excel():
 # Hàm đọc dữ liệu từ file
 def get_data_from_file():
     # desktop = os.path.join(os.path.join(os.environ["USERPROFILE"]), "Desktop")
-    output_dir = "C:\cai_dat_catam"
+    output_dir = "/home/ailab/Downloads/luu_ca_tam"
 
     df = pd.read_excel(os.path.join(output_dir, "cai_dat_catam.xlsx"))
     avg1.set(df.iloc[0, 1])

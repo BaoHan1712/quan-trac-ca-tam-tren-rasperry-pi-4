@@ -20,7 +20,8 @@ from concurrent.futures import ThreadPoolExecutor
 import importlib
 import sys
 import ctypes
-import win32com.client
+# import win32com.client
 import queue
+
 import numpy as np 
 import requests
