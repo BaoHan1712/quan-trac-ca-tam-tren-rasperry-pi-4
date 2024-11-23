@@ -17,7 +17,7 @@ Hệ thống giám sát chất lượng nước trong bể cá tầm, sử dụn
 ## 🚀 Tính Năng Chính
 
 ### 📊 Giám Sát Thời Gian Thực
-- **Theo dõi dữ liệu từ 2 cảm biến độc lập**: Ứng dụng có khả năng theo dõi và hiển thị dữ liệu từ hai cảm biến khác nhau, giúp người dùng dễ dàng theo dõi tình trạng nước trong trang trại cá.
+- **Theo dõi dữ liệu từ 2 cảm biến độc lập**: Ứng dụng có khả năng theo dõi và hiển thị dữ liệu từ hai cảm biến khác nhau, giúp người dùng dễ dàng theo dõi tình trạng nước trong bể cá.
 - **Hiển thị giá trị đo được theo thời gian thực**: Dữ liệu từ cảm biến được cập nhật liên tục, cho phép người dùng theo dõi tình trạng nước ngay lập tức.
 - **Tính toán giá trị trung bình mỗi 10 lần đo**: Ứng dụng tự động tính toán và hiển thị giá trị trung bình của các lần đo, giúp người dùng có cái nhìn tổng quan về chất lượng nước.
 
@@ -45,6 +45,8 @@ Hệ thống giám sát chất lượng nước trong bể cá tầm, sử dụn
 
 ## 🔧 Cấu Trúc Hệ Thống
 
+### Sơ đồ tổng quan
+
 ```mermaid
 graph TD
     A[Cảm Biến 1] -->|UART| C[Raspberry Pi]
@@ -54,6 +56,66 @@ graph TD
     C -->|Điều Khiển| F[Đèn LED]
     C -->|Lưu Trữ| G[Excel]
 
+```
+
+### Chi tiết xử lý
+
+```mermaid
+graph TD
+    subgraph Cảm_Biến
+        S1[Cảm Biến 1] --> |Đo độ đục| D1[Dữ liệu thô]
+        S2[Cảm Biến 2] --> |Đo độ đục| D2[Dữ liệu thô]
+    end
+
+    subgraph Xử_Lý_Dữ_Liệu
+        D1 --> |UART| P1[Tính trung bình 10 lần đo]
+        D2 --> |UART| P2[Tính trung bình 10 lần đo]
+        P1 --> C1[So sánh với ngưỡng]
+        P2 --> C2[So sánh với ngưỡng]
+    end
+
+    subgraph Cảnh_Báo
+        C1 --> |Vượt ngưỡng| W1{Kiểm tra điều kiện}
+        C2 --> |Vượt ngưỡng| W1
+        W1 --> |Cả 2 CB đục| A1[Bật chuông]
+        W1 --> |1 CB đục + 1 CB offline| A1
+        W1 --> |Pin yếu/Offline| A2[Bật đèn LED]
+    end
+
+    subgraph Lưu_Trữ
+        P1 --> |Định kỳ| E1[Excel theo ngày]
+        P2 --> |Định kỳ| E1
+        C1 --> |Khi đột biến| E2[Excel cài đặt]
+        C2 --> |Khi đột biến| E2
+    end
+
+    subgraph Giao_Diện
+        E1 --> |Hiển thị| UI[Giao diện người dùng]
+        E2 --> |Cập nhật| UI
+        UI --> |Điều khiển| CTL[Bảng điều khiển]
+        CTL --> |Cài đặt| SET[Ngưỡng & Thời gian vệ sinh]
+    end
+```
+
+### Luồng xử lý dữ liệu
+
+```mermaid
+sequenceDiagram
+    participant S as Cảm biến
+    participant R as Raspberry Pi
+    participant D as Xử lý dữ liệu
+    participant W as Cảnh báo
+    participant U as UI
+    participant E as Excel
+
+    S->>R: Gửi dữ liệu độ đục
+    S->>R: Gửi trạng thái pin
+    R->>D: Tính giá trị trung bình
+    D->>W: Kiểm tra ngưỡng
+    W-->>U: Cập nhật trạng thái
+    W-->>E: Lưu dữ liệu
+    U->>S: Gửi lệnh vệ sinh
+    U->>S: Cài đặt ngưỡng
 ```
 
 ## 💻 Giao Diện
