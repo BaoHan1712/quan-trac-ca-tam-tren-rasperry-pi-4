@@ -17,7 +17,7 @@ Hệ thống giám sát chất lượng nước trong bể cá tầm, sử dụn
 ## 🚀 Tính Năng Chính
 
 ### 📊 Giám Sát Thời Gian Thực
-- **Theo dõi dữ liệu từ 2 cảm biến độc lập**: Ứng dụng có khả năng theo dõi và hiển thị dữ liệu từ hai cảm biến khác nhau, giúp người dùng dễ dàng theo dõi tình trạng nước trong bể cá.
+- **Theo dõi dữ liệu từ 2 cảm biến độc lập**: Ứng dụng có khả năng theo dõi và hiển thị dữ liệu từ hai cảm biến khác nhau, giúp người dùng dễ dàng theo dõi tình trạng nước trong trang trại cá.
 - **Hiển thị giá trị đo được theo thời gian thực**: Dữ liệu từ cảm biến được cập nhật liên tục, cho phép người dùng theo dõi tình trạng nước ngay lập tức.
 - **Tính toán giá trị trung bình mỗi 10 lần đo**: Ứng dụng tự động tính toán và hiển thị giá trị trung bình của các lần đo, giúp người dùng có cái nhìn tổng quan về chất lượng nước.
 
