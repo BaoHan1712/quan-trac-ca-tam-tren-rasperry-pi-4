@@ -18,21 +18,21 @@ def handleAvg(arr):
 #---------------------------------- Lưu DỮU LIỆU VÀO EXCEL------------------------
 
 def save_data_excel_tb(avg1, avg2, arr_avg1, arr_avg2, value1, value2, threshold_value_1, threshold_value_2, time_clean1, time_clean2):
-    average_sensor_1 = avg1.get() if avg1 and avg1.get() is not None else 0
-    average_sensor_2 = avg2.get() if avg2 and avg2.get() is not None else 0
+    average_sensor_1 = avg1.get() if avg1 and avg1.get() is not None else 1
+    average_sensor_2 = avg2.get() if avg2 and avg2.get() is not None else 1
 
     data = {
         "time_save": [datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")],
         "average_sensor_1": [average_sensor_1],
         "average_sensor_2": [average_sensor_2],
-        "array_average_1": [arr_avg1 if arr_avg1 is not None else "No data"],
-        "array_average_2": [arr_avg2 if arr_avg2 is not None else "No data"],
-        "mutation_value_1": [value1.get() if value1 and value1.get() is not None else 0],
-        "mutation_value_2": [value2.get() if value2 and value2.get() is not None else 0],
-        "threshold_value_sensor_1": [threshold_value_1.get() if threshold_value_1 and threshold_value_1.get() is not None else 0],
-        "threshold_value_sensor_2": [threshold_value_2.get() if threshold_value_2 and threshold_value_2.get() is not None else 0],
-        "time_clean_1": [time_clean1.get() or "No data"],
-        "time_clean_2": [time_clean2.get() or "No data"]
+        "array_average_1": [arr_avg1 if arr_avg1 is not None else 1],
+        "array_average_2": [arr_avg2 if arr_avg2 is not None else 1],
+        "mutation_value_1": [value1.get() if value1 and value1.get() is not None else 1],
+        "mutation_value_2": [value2.get() if value2 and value2.get() is not None else 1],
+        "threshold_value_sensor_1": [threshold_value_1.get() if threshold_value_1 and threshold_value_1.get() is not None else 1],
+        "threshold_value_sensor_2": [threshold_value_2.get() if threshold_value_2 and threshold_value_2.get() is not None else 1],
+        "time_clean_1": [time_clean1.get() or 1],
+        "time_clean_2": [time_clean2.get() or 1]
     }
 
     output_dir = "/home/ailab/Downloads/luu_ca_tam"
@@ -52,10 +52,14 @@ df_global = pd.DataFrame(columns=[ "time_save", "sensor_1", "sensor_2", "mutatio
 
 def save_data_excel_ngay(value_1=1, value_2=1, mutation_value_1=None, mutation_value_2=None):
     global df_global
+    
+    # Kiểm tra trạng thái offline của cảm biến
+    sensor1_value = 0 if status1.get() == "Offline" else (value_1 if value_1 is None else value1.get())
+    sensor2_value = 0 if status2.get() == "Offline" else (value_2 if value_2 is None else value2.get())   
     data = {
         "time_save": datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-        "sensor_1": value_1 if value_1 is None else value1.get(),
-        "sensor_2": value_2 if value_2 is None else value2.get(),
+        "sensor_1": sensor1_value,
+        "sensor_2": sensor2_value,
         "mutation_value_1": "" if mutation_value_1 is None else mutation_value_1,
         "mutation_value_2": "" if mutation_value_2 is None else mutation_value_2,
     }
@@ -63,7 +67,7 @@ def save_data_excel_ngay(value_1=1, value_2=1, mutation_value_1=None, mutation_v
     if value_1 is None or value_2 is None:
         print("Co dot bien tu CB", mutation_value_1, mutation_value_2)
     else:
-        print("Khong co dot bien", value1.get(), value2.get())
+        print("Khong co dot bien", sensor1_value, sensor2_value)
 
     # Tạo DataFrame từ dữ liệu mới
     df_new_data = pd.DataFrame([data])
@@ -121,14 +125,13 @@ def export_excel():
 
 # Hàm đọc dữ liệu từ file
 def get_data_from_file():
-    # desktop = os.path.join(os.path.join(os.environ["USERPROFILE"]), "Desktop")
     output_dir = "/home/ailab/Downloads/luu_ca_tam"
 
     df = pd.read_excel(os.path.join(output_dir, "cai_dat_catam.xlsx"))
-    avg1.set(df.iloc[0, 1])
-    avg2.set(df.iloc[0, 2])
-    threshold_value_1.set(df.iloc[0, 7])
-    threshold_value_2.set(df.iloc[0, 8])
-    time_clean1.set(df.iloc[0, 9])
-    time_clean1.set(df.iloc[0, 10])
-    print(threshold_value_1.get(), threshold_value_2.get(), time_clean1.get(),time_clean2.get(), avg1.get(), avg2.get())
+    avg1.set(df.iloc[0, 1] if not pd.isna(df.iloc[0, 1]) else 1)
+    avg2.set(df.iloc[0, 2] if not pd.isna(df.iloc[0, 2]) else 1)
+    threshold_value_1.set(df.iloc[0, 7] if not pd.isna(df.iloc[0, 7]) else 1)
+    threshold_value_2.set(df.iloc[0, 8] if not pd.isna(df.iloc[0, 8]) else 1)
+    time_clean1.set(df.iloc[0, 9] if not pd.isna(df.iloc[0, 9]) else 1)
+    time_clean2.set(df.iloc[0, 10] if not pd.isna(df.iloc[0, 10]) else 1)
+    print(threshold_value_1.get(), threshold_value_2.get(), time_clean1.get(), time_clean2.get(), avg1.get(), avg2.get())
